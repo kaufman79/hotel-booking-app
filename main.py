@@ -1,4 +1,3 @@
-import pandas
 import pandas as pd
 
 df = pd.read_csv("hotels.csv", dtype={"id": str})
@@ -27,6 +26,12 @@ class Hotel:
             return False
 
 
+class SpaHotel(Hotel):
+
+    def book_spa(self):
+        pass
+
+
 class ReservationTicket:
     def __init__(self, customer_name, hotel_object):
         self.customer_name = customer_name
@@ -41,6 +46,19 @@ class ReservationTicket:
         """
         return content
 
+
+class SpaTicket:
+    def __init__(self, customer_name, hotel_object):
+        self.customer_name = customer_name
+        self.hotel = hotel_object
+    def generate(self):
+        content = f"""
+        Thank you for your spa reservation!
+        Here is your booking information:
+        Name: {self.customer_name}
+        Hotel name: {self.hotel.name}
+        """
+        return content
 
 class CreditCard:
     def __init__(self, number):
@@ -67,9 +85,9 @@ class SecureCreditCard(CreditCard):
 if __name__ == "__main__":
     print(df)
     hotel_ID = input("Enter the id of the hotel: ")
-    hotel = Hotel(hotel_ID)
+    hotel = SpaHotel(hotel_ID)
     if hotel.available():
-        # if actual app, we would ask user for this info:
+        # in a real-world app, we would ask user for this info:
         # card_number = input("Credit card number: ")
         # card_expire_date = input("Card expiration date: ")
         # cardholder_name = input("Cardholder name: ")
@@ -84,6 +102,13 @@ if __name__ == "__main__":
                 reservation_ticket = ReservationTicket(customer_name=name,
                                                        hotel_object=hotel)
                 print(reservation_ticket.generate())
+
+                spa_response = input("Would you like to book a spa package? ")
+                if spa_response == "yes":
+                    hotel.book_spa()
+                    spa_ticket = SpaTicket(customer_name=name,
+                                            hotel_object=hotel)
+                    print(spa_ticket.generate())
             else:
                 print("Credit card authentication failed")
         else:
