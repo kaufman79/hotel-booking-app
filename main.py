@@ -2,7 +2,8 @@ import pandas
 import pandas as pd
 
 df = pd.read_csv("hotels.csv", dtype={"id": str})
-card_df = pandas.read_csv("cards.csv", dtype=str).to_dict(orient="records")
+df_cards = pd.read_csv("cards.csv", dtype=str).to_dict(orient="records")
+df_cards_security = pd.read_csv("card_security.csv", dtype=str)
 
 class Hotel:
     def __init__(self, hotel_id):
@@ -48,7 +49,16 @@ class CreditCard:
     def validate(self, expiration, holder, cvc):
         card_data = {"number": self.number, "expiration": expiration,
                      "holder": holder, "cvc": cvc}
-        if card_data in card_df:
+        if card_data in df_cards:
+            return True
+        else:
+            return False
+
+
+class SecureCreditCard(CreditCard):
+    def authenticate(self, given_password):
+        password = df_cards_security.loc[df_cards_security["number"] == self.number, "password"].squeeze()
+        if password == given_password:
             return True
         else:
             return False
@@ -64,14 +74,18 @@ if __name__ == "__main__":
         # card_expire_date = input("Card expiration date: ")
         # cardholder_name = input("Cardholder name: ")
         # cvc_code = input("Card CVC code: ")
-        credit_card = CreditCard(number="1234567890123456")
+        credit_card = SecureCreditCard(number="1234567890123456")
         if credit_card.validate(expiration="12/26",
                                  holder="JOHN SMITH", cvc="123"):
-            hotel.book()
-            name = input("Enter your name: ")
-            reservation_ticket = ReservationTicket(customer_name=name,
-                                                   hotel_object=hotel)
-            print(reservation_ticket.generate())
+            # card_pass = input("card password: ")
+            if credit_card.authenticate(given_password="mypass"):
+                hotel.book()
+                name = input("Enter your name: ")
+                reservation_ticket = ReservationTicket(customer_name=name,
+                                                       hotel_object=hotel)
+                print(reservation_ticket.generate())
+            else:
+                print("Credit card authentication failed")
         else:
             print("There was a problem with your payment")
     else:
